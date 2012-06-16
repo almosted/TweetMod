@@ -32,9 +32,6 @@ public class GuiTwitter extends GuiScreen
         field_50066_k = "";
     }
 
-    /**
-     * Adds the buttons (and other controls) to the screen in question.
-     */
     public void initGui()
     {
         Keyboard.enableRepeatEvents(true);
@@ -61,9 +58,6 @@ public class GuiTwitter extends GuiScreen
         }
     }
 
-    /**
-     * Fired when a control is clicked. This is the equivalent of ActionListener.actionPerformed(ActionEvent e).
-     */
     protected void actionPerformed(GuiButton par1GuiButton)
     {    
     	if (par1GuiButton.id == 0)
@@ -89,27 +83,18 @@ public class GuiTwitter extends GuiScreen
         	mc.displayGuiScreen(new GuiTwitter());
         }
     }
-    /**
-     * Called when the screen is unloaded. Used to disable keyboard repeat events
-     */
+
     public void onGuiClosed()
     {
         Keyboard.enableRepeatEvents(false);
         mc.ingameGUI.func_50014_d();
     }
 
-    /**
-     * Called from the main game loop to update the screen.
-     */
     public void updateScreen()
     {
         field_50064_a.updateCursorCounter();
     }
     
-
-    /**
-     * Fired when a key is typed. This is the equivalent of KeyListener.keyTyped(KeyEvent e).
-     */
     protected void keyTyped(char par1, int par2)
     {
 
@@ -153,9 +138,6 @@ public class GuiTwitter extends GuiScreen
         }
     }
 
-    /**
-     * Handles mouse input.
-     */
     public void handleMouseInput()
     {
         super.handleMouseInput();
@@ -227,9 +209,6 @@ public class GuiTwitter extends GuiScreen
        drawTexturedModalRect(displayX + 15, height - 300, 0, 0, xSize, ySize);
     }
 
-    /**
-     * Draws the screen and all the components in it.
-     */
     public void drawScreen(int par1, int par2, float par3)
     {
         int j = (width - xSize) / 2;
