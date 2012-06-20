@@ -1,13 +1,23 @@
 package net.minecraft.src;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+
+import javax.imageio.ImageIO;
 
 import net.minecraft.client.Minecraft;
+
 
 public class TweetMod 
 {
@@ -17,6 +27,10 @@ public class TweetMod
 	public static String pseudo = "";
 	
 	public static String msg = "";
+	
+	public static String urlImage = "";
+	public static boolean tweetWithPicture = false;
+	public static String picturePc;
     
     public static String timeline0 = "";
     public static String timeline1 = "";
@@ -260,7 +274,54 @@ public class TweetMod
         mention19 = betterView(mention19);
     }
     
-    public static String betterView(String s)
+	public static void uploadScreen(String screen) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		File file = new File(screen);
+		BufferedImage imageToWrite = ImageIO.read(file);
+		ImageIO.write(imageToWrite, "png", baos);
+		URL url = new URL("http://api.imgur.com/2/upload");
+
+		String data = URLEncoder.encode("image", "UTF-8") + "=" + URLEncoder.encode(Base64.encodeBase64String(baos.toByteArray()), "UTF-8");
+		data += "&" + URLEncoder.encode("key", "UTF-8") + "=" + URLEncoder.encode("c442e946035fcc14adf31f0410bb2c25", "UTF-8");
+		URLConnection conn = url.openConnection();
+		conn.setDoOutput(true);
+	    
+		OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+		wr.write(data);
+		wr.flush();
+		
+		InputStream is;
+		if (((HttpURLConnection) conn).getResponseCode() == 400)
+		    is = ((HttpURLConnection) conn).getErrorStream();
+		else
+		    is = conn.getInputStream();
+
+		BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+		String line;
+		String urlImage = null;
+	    while ((line = rd.readLine()) != null) {
+	        if(line.length() >= 300) {
+	    		int debut = line.indexOf("<original>");
+	    		int fin = line.indexOf("</original>", debut);
+	    		urlImage = " " + line.substring(debut + 10, fin);
+		    	System.out.println(urlImage);
+	        }
+	    }
+	    wr.close();
+	    rd.close();
+	    
+		setUrlImage(urlImage);
+	}
+    
+    public static void setUrlImage(String s) {
+    	urlImage = s;
+	}
+    
+    public static String getUrlImage() {
+    	return urlImage;
+	}
+
+	public static String betterView(String s)
     {
         s = s.replaceAll("Ã"+"\u00A0", "à");
         s = s.replaceAll("Ã©", "é");

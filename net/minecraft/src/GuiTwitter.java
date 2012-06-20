@@ -1,8 +1,14 @@
 package net.minecraft.src;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.*;
+
+import javax.swing.JFileChooser;
+
 import net.minecraft.client.Minecraft;
+
+import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -16,7 +22,7 @@ public class GuiTwitter extends GuiScreen
     private String field_50059_f;
     private int field_50067_h;
     private List field_50068_i;
-    protected GuiTextField field_50064_a;
+    protected GuiTextField tweetText;
     private String field_50066_k;
 	private int xSize = 270, ySize = 275;
 	
@@ -38,12 +44,12 @@ public class GuiTwitter extends GuiScreen
         field_50063_c = mc.ingameGUI.func_50013_c().size();
         int j = (width - xSize)/2;
         int k = (height - ySize)/2;
-        field_50064_a = new GuiTextField(fontRenderer, 4, height - 12, width - 4, 12);
-        field_50064_a.setMaxStringLength(140);
-        field_50064_a.func_50027_a(false);
-        field_50064_a.func_50033_b(true);
-        field_50064_a.setText(field_50066_k);
-        field_50064_a.func_50026_c(false);
+        tweetText = new GuiTextField(fontRenderer, 4, height - 12, width - 4, 12);
+        tweetText.setMaxStringLength(140 - TweetMod.getUrlImage().length());
+        tweetText.func_50027_a(false);
+        tweetText.func_50033_b(true);
+        tweetText.setText(field_50066_k);
+        tweetText.func_50026_c(false);
         controlList.add(new GuiButton(0, width - 27, 2, 25, 20, "Exit"));
         controlList.add(new GuiButton(1, width - 79, 2, 50, 20, "Refresh"));
         if(TweetMod.infos == 0)
@@ -56,12 +62,15 @@ public class GuiTwitter extends GuiScreen
         	controlList.add(new GuiButton(2, width - 131, 2, 50, 20, "Timeline"));
         	TweetMod.getMentionTwitter();
         }
+        controlList.add(new GuiButton(3, width - 131, 24, 129, 20, "Tweet with picture"));
     }
 
     protected void actionPerformed(GuiButton par1GuiButton)
     {    
     	if (par1GuiButton.id == 0)
         {
+        	TweetMod.tweetWithPicture = false;
+        	TweetMod.setUrlImage("");
         	mc.displayGuiScreen(null);
         }
     	if (par1GuiButton.id == 1)
@@ -82,6 +91,19 @@ public class GuiTwitter extends GuiScreen
         	mc.displayGuiScreen(null);
         	mc.displayGuiScreen(new GuiTwitter());
         }
+        if (par1GuiButton.id == 3)
+        {
+            try
+            {
+            	TweetMod.tweetWithPicture = false;
+            	TweetMod.setUrlImage("");
+            	new ChooseScreen();
+            }
+            catch (Throwable throwable)
+            {
+                throwable.printStackTrace();
+            }
+        }
     }
 
     public void onGuiClosed()
@@ -92,9 +114,9 @@ public class GuiTwitter extends GuiScreen
 
     public void updateScreen()
     {
-        field_50064_a.updateCursorCounter();
+        tweetText.updateCursorCounter();
     }
-    
+
     protected void keyTyped(char par1, int par2)
     {
 
@@ -106,13 +128,15 @@ public class GuiTwitter extends GuiScreen
         }
         else if (par2 == 28)
         {
-            String s = field_50064_a.getText().trim();
+            String s = tweetText.getText().trim();
 
             if (s.length() > 0 && !mc.lineIsCommand(s))
             {
-            	TweetMod.tweet(s);
+            	TweetMod.tweet(s + TweetMod.getUrlImage());
             	mc.displayGuiScreen(null);
-            	mc.displayGuiScreen(new GuiTwitter());
+            	GuiTweetSend.queueTakenAchievement(s + TweetMod.getUrlImage());
+            	TweetMod.tweetWithPicture = false;
+            	TweetMod.setUrlImage("");
             }
 
         }
@@ -134,7 +158,7 @@ public class GuiTwitter extends GuiScreen
         }
         else
         {
-            field_50064_a.func_50037_a(par1, par2);
+            tweetText.func_50037_a(par1, par2);
         }
     }
 
@@ -187,16 +211,16 @@ public class GuiTwitter extends GuiScreen
         if (i == j)
         {
             field_50063_c = j;
-            field_50064_a.setText(field_50062_b);
+            tweetText.setText(field_50062_b);
             return;
         }
 
         if (field_50063_c == j)
         {
-            field_50062_b = field_50064_a.getText();
+            field_50062_b = tweetText.getText();
         }
 
-        field_50064_a.setText((String)mc.ingameGUI.func_50013_c().get(i));
+        tweetText.setText((String)mc.ingameGUI.func_50013_c().get(i));
         field_50063_c = i;
     }
     
@@ -219,9 +243,12 @@ public class GuiTwitter extends GuiScreen
         drawRect(0, height - 306, width, height - 302, 0x80000000);
         drawRect(0, height - 306, width, height - 302, 0x80000000);
         drawRect(2, height - 14, width - 2, height - 2, 0x80000000);
-        field_50064_a.drawTextBox();
+        tweetText.drawTextBox();
         drawString(fontRenderer, "#TweetMod", 2, 2, 0x3366ff);
         drawCenteredString(fontRenderer, TweetMod.msg, width / 2, 2, 0xffffff);
+        if(TweetMod.tweetWithPicture) {
+        	drawCenteredString(fontRenderer, "§4Your tweet will be send with this picture: " + TweetMod.picturePc, width / 2, 16, 0xffffff);
+        }
         if (TweetMod.infos == 0)
         {
             drawString(fontRenderer, TweetMod.pseudo, 52, height - 320, 0xffffff);
